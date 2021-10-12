@@ -9,6 +9,8 @@ import type { OpenAPIV3 } from 'openapi-types';
 import * as ts from 'typescript';
 import YError from 'yerror';
 import camelCase from 'camelcase';
+import { factory } from 'typescript';
+import { writeFileSync } from 'fs';
 
 type Context = {
   nameResolver: (ref: string) => Promise<string[]>;
@@ -744,20 +746,12 @@ async function buildObjectTypeNode(
   if (schema.required) {
     elements = elements.concat(
       await Promise.all(
-        schema.required
-          .filter(
-            (propertyName) =>
-              'undefined' === typeof schema.properties?.[propertyName],
-          )
-          .map(async (propertyName) => {
-            return ts.createPropertySignature(
-              [],
-              propertyName,
-              undefined,
-              ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword),
-              undefined,
-            );
-          }),
+        const nameProp = factory.createPropertySignature(
+                      undefined,
+                      factory.createIdentifier("name"),
+                      undefined,
+                      factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+                      );
       ),
     );
   }
